@@ -216,7 +216,7 @@ Antworte NUR mit einem JSON-Array der Produkte, keine zusätzlichen Erklärungen
         
         user_message = UserMessage(
             text=f"Extrahiere alle Produkte und Preise aus diesem {supermarket_name} Prospekt-Bild. Antworte nur mit dem JSON-Array.",
-            image_contents=[image_content]
+            file_contents=[image_content]
         )
         
         response = await chat.send_message(user_message)
