@@ -73,16 +73,16 @@ export default function SupermarketsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Superm\u00e4rkte</Text>
+        <Text style={styles.title}>Supermärkte</Text>
         <Text style={styles.subtitle}>
-          W\u00e4hlen Sie die M\u00e4rkte f\u00fcr den Preisvergleich
+          Wählen Sie die Märkte für den Preisvergleich
         </Text>
       </View>
 
       <View style={styles.statsCard}>
         <Ionicons name="storefront" size={24} color="#4CAF50" />
         <Text style={styles.statsText}>
-          {activeCount} von {supermarkets.length} M\u00e4rkten aktiv
+          {activeCount} von {supermarkets.length} Märkten aktiv
         </Text>
       </View>
 
