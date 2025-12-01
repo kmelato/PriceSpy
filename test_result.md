@@ -185,15 +185,18 @@ backend:
 
   - task: "AI Extraction from Image"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "low"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST /api/extract uses GPT-4 Vision to extract products from prospekt images. Uses Emergent LLM Key."
+      - working: false
+        agent: "testing"
+        comment: "API endpoint responds correctly but AI extraction has error: 'UserMessage.__init__() got an unexpected keyword argument 'image_contents''. The emergentintegrations library API may have changed. Endpoint returns proper error handling with 'no_products' status."
 
 frontend:
   - task: "Home/Angebote Screen"
