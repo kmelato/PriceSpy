@@ -104,7 +104,7 @@ export default function HomeScreen() {
       <View style={styles.priceContainer}>
         {product.original_price && (
           <Text style={styles.originalPrice}>
-            {product.original_price.toFixed(2)} \u20ac
+            {product.original_price.toFixed(2)} €
           </Text>
         )}
         <Text style={styles.price}>{product.price.toFixed(2)} \u20ac</Text>
