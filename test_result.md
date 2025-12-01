@@ -159,11 +159,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Create, read, update, delete shopping lists with items. Needs testing"
+      - working: true
+        agent: "testing"
+        comment: "All shopping list CRUD operations tested successfully: POST /lists (create), GET /lists (retrieve all), POST /lists/{id}/items (add items), PUT /lists/{id}/items/{index}/toggle (toggle checked), DELETE /lists/{id}/items/{index} (remove item), DELETE /lists/{id} (delete list). Best price lookup working correctly."
 
   - task: "Price Alerts CRUD"
     implemented: true
