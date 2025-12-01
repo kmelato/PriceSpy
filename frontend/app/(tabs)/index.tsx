@@ -107,7 +107,7 @@ export default function HomeScreen() {
             {product.original_price.toFixed(2)} €
           </Text>
         )}
-        <Text style={styles.price}>{product.price.toFixed(2)} \u20ac</Text>
+        <Text style={styles.price}>{product.price.toFixed(2)} €</Text>
         {product.original_price && (
           <View style={styles.discountBadge}>
             <Text style={styles.discountText}>
