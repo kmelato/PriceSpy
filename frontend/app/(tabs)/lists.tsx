@@ -73,10 +73,10 @@ export default function ListsScreen() {
   };
 
   const deleteList = async (listId: string) => {
-    Alert.alert('Liste l\u00f6schen', 'M\u00f6chten Sie diese Liste wirklich l\u00f6schen?', [
+    Alert.alert('Liste löschen', 'Möchten Sie diese Liste wirklich löschen?', [
       { text: 'Abbrechen', style: 'cancel' },
       {
-        text: 'L\u00f6schen',
+        text: 'Löschen',
         style: 'destructive',
         onPress: async () => {
           try {
@@ -194,7 +194,7 @@ export default function ListsScreen() {
           <View style={styles.addItemContainer}>
             <TextInput
               style={styles.addItemInput}
-              placeholder="Artikel hinzuf\u00fcgen..."
+              placeholder="Artikel hinzufügen..."
               placeholderTextColor="#888"
               value={newItemName}
               onChangeText={setNewItemName}
@@ -209,7 +209,7 @@ export default function ListsScreen() {
             <View style={styles.savingsCard}>
               <Ionicons name="wallet-outline" size={20} color="#4CAF50" />
               <Text style={styles.savingsText}>
-                Gesch\u00e4tzter Gesamtpreis: {calculateTotalSavings().toFixed(2)} \u20ac
+                Geschätzter Gesamtpreis: {calculateTotalSavings().toFixed(2)} \u20ac
               </Text>
             </View>
           )}
@@ -220,7 +220,7 @@ export default function ListsScreen() {
                 <Ionicons name="basket-outline" size={64} color="#444" />
                 <Text style={styles.emptyText}>Liste ist leer</Text>
                 <Text style={styles.emptySubtext}>
-                  F\u00fcgen Sie Artikel hinzu, um den besten Preis zu finden
+                  Fügen Sie Artikel hinzu, um den besten Preis zu finden
                 </Text>
               </View>
             ) : (

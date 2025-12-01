@@ -92,10 +92,10 @@ export default function SettingsScreen() {
   };
 
   const deleteAlert = async (alertId: string) => {
-    Alert.alert('Alarm l\u00f6schen', 'M\u00f6chten Sie diesen Preisalarm l\u00f6schen?', [
+    Alert.alert('Alarm löschen', 'Möchten Sie diesen Preisalarm löschen?', [
       { text: 'Abbrechen', style: 'cancel' },
       {
-        text: 'L\u00f6schen',
+        text: 'Löschen',
         style: 'destructive',
         onPress: async () => {
           try {
@@ -151,7 +151,7 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </View>
             <Text style={styles.sectionDescription}>
-              Geben Sie Ihre PLZ ein, um relevante Angebote in Ihrer N\u00e4he zu finden.
+              Geben Sie Ihre PLZ ein, um relevante Angebote in Ihrer Nähe zu finden.
             </Text>
           </View>
 
@@ -254,14 +254,14 @@ export default function SettingsScreen() {
 
           {/* About Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>\u00dcber die App</Text>
+            <Text style={styles.sectionTitle}>Über die App</Text>
             <View style={styles.aboutCard}>
               <Ionicons name="pricetag" size={32} color="#4CAF50" />
               <Text style={styles.appName}>Prospekt Preisvergleich</Text>
               <Text style={styles.appVersion}>Version 1.0.0</Text>
               <Text style={styles.appDescription}>
                 Vergleichen Sie Preise aus Supermarkt-Prospekten und finden Sie die
-                besten Angebote in Ihrer N\u00e4he.
+                besten Angebote in Ihrer Nähe.
               </Text>
             </View>
           </View>

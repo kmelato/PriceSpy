@@ -53,7 +53,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="supermarkets"
         options={{
-          title: 'M\u00e4rkte',
+          title: 'Märkte',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="storefront" size={size} color={color} />
           ),

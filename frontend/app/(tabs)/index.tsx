@@ -30,13 +30,13 @@ interface Product {
 
 const CATEGORIES = [
   { name: 'Alle', icon: 'apps' },
-  { name: 'Obst & Gem\u00fcse', icon: 'nutrition' },
+  { name: 'Obst & Gemüse', icon: 'nutrition' },
   { name: 'Fleisch & Wurst', icon: 'restaurant' },
   { name: 'Milchprodukte', icon: 'water' },
   { name: 'Brot & Backwaren', icon: 'pizza' },
-  { name: 'Getr\u00e4nke', icon: 'beer' },
-  { name: 'S\u00fc\u00dfigkeiten & Snacks', icon: 'ice-cream' },
-  { name: 'Tiefk\u00fchl', icon: 'snow' },
+  { name: 'Getränke', icon: 'beer' },
+  { name: 'Süßigkeiten & Snacks', icon: 'ice-cream' },
+  { name: 'Tiefkühl', icon: 'snow' },
   { name: 'Haushalt', icon: 'home' },
   { name: 'Drogerie', icon: 'medkit' },
 ];

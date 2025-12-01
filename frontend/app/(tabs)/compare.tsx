@@ -66,7 +66,7 @@ export default function CompareScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Preisvergleich</Text>
           <Text style={styles.subtitle}>
-            Vergleichen Sie Preise f\u00fcr das gleiche Produkt
+            Vergleichen Sie Preise für das gleiche Produkt
           </Text>
         </View>
 
@@ -75,7 +75,7 @@ export default function CompareScreen() {
             <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="z.B. Butter, Milch, \u00c4pfel..."
+              placeholder="z.B. Butter, Milch, Äpfel..."
               placeholderTextColor="#888"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -101,7 +101,7 @@ export default function CompareScreen() {
                 <Text style={styles.emptyText}>Produkt eingeben</Text>
                 <Text style={styles.emptySubtext}>
                   Geben Sie einen Produktnamen ein, um Preise bei verschiedenen
-                  Superm\u00e4rkten zu vergleichen
+                  Supermärkten zu vergleichen
                 </Text>
               </View>
             ) : results.length === 0 ? (
@@ -118,7 +118,7 @@ export default function CompareScreen() {
                   <View style={styles.cheapestCard}>
                     <View style={styles.cheapestBadge}>
                       <Ionicons name="trophy" size={16} color="#fff" />
-                      <Text style={styles.cheapestBadgeText}>G\u00fcnstigster Preis</Text>
+                      <Text style={styles.cheapestBadgeText}>Günstigster Preis</Text>
                     </View>
                     <Text style={styles.cheapestName}>{cheapest.name}</Text>
                     <Text style={styles.cheapestSupermarket}>
