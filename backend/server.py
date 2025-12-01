@@ -575,6 +575,114 @@ async def delete_shopping_list(list_id: str):
         raise HTTPException(status_code=404, detail="Shopping list not found")
     return {"status": "success"}
 
+@api_router.get("/lists/{list_id}/optimize")
+async def optimize_shopping_list(list_id: str):
+    """Analyze shopping list and group items by supermarket for best prices."""
+    lst = await db.shopping_lists.find_one({"id": list_id})
+    if not lst:
+        raise HTTPException(status_code=404, detail="Shopping list not found")
+    
+    items = lst.get("items", [])
+    if not items:
+        return {
+            "list_id": list_id,
+            "list_name": lst.get("name"),
+            "supermarket_groups": [],
+            "total_cost": 0,
+            "potential_savings": 0
+        }
+    
+    # For each item, find best price at each supermarket
+    supermarket_items = {}  # {supermarket_name: {supermarket_id, items: [], total: 0}}
+    all_items_analysis = []
+    
+    for item in items:
+        product_name = item.get("product_name", "")
+        quantity = item.get("quantity", 1)
+        
+        # Find this product across all supermarkets
+        products = await db.products.find(
+            {"name": {"$regex": product_name, "$options": "i"}}
+        ).to_list(100)
+        
+        if not products:
+            # Product not found - add to "Nicht gefunden" group
+            if "Nicht gefunden" not in supermarket_items:
+                supermarket_items["Nicht gefunden"] = {
+                    "supermarket_id": None,
+                    "supermarket_name": "Nicht gefunden",
+                    "items": [],
+                    "total": 0
+                }
+            supermarket_items["Nicht gefunden"]["items"].append({
+                "product_name": product_name,
+                "quantity": quantity,
+                "price": None,
+                "total_price": None
+            })
+            continue
+        
+        # Find best price
+        best_product = min(products, key=lambda p: p.get("price", float('inf')))
+        best_price = best_product.get("price", 0)
+        best_supermarket = best_product.get("supermarket_name", "Unknown")
+        supermarket_id = best_product.get("supermarket_id")
+        
+        # Add to supermarket group
+        if best_supermarket not in supermarket_items:
+            supermarket_items[best_supermarket] = {
+                "supermarket_id": supermarket_id,
+                "supermarket_name": best_supermarket,
+                "items": [],
+                "total": 0
+            }
+        
+        item_total = best_price * quantity
+        supermarket_items[best_supermarket]["items"].append({
+            "product_name": product_name,
+            "quantity": quantity,
+            "price": best_price,
+            "total_price": item_total,
+            "original_price": best_product.get("original_price")
+        })
+        supermarket_items[best_supermarket]["total"] += item_total
+        
+        # Track for savings calculation
+        all_items_analysis.append({
+            "product_name": product_name,
+            "best_price": best_price,
+            "worst_price": max(p.get("price", 0) for p in products),
+            "quantity": quantity
+        })
+    
+    # Calculate potential savings (compared to buying everything at worst prices)
+    total_cost = sum(sm["total"] for sm in supermarket_items.values() if sm["total"])
+    worst_total = sum(
+        item["worst_price"] * item["quantity"] 
+        for item in all_items_analysis
+    )
+    potential_savings = worst_total - total_cost if worst_total > total_cost else 0
+    
+    # Convert to sorted list (by total, descending)
+    supermarket_groups = sorted(
+        [v for v in supermarket_items.values() if v["supermarket_name"] != "Nicht gefunden"],
+        key=lambda x: x["total"],
+        reverse=True
+    )
+    
+    # Add "not found" items at the end if any
+    if "Nicht gefunden" in supermarket_items:
+        supermarket_groups.append(supermarket_items["Nicht gefunden"])
+    
+    return {
+        "list_id": list_id,
+        "list_name": lst.get("name"),
+        "supermarket_groups": supermarket_groups,
+        "total_cost": round(total_cost, 2),
+        "potential_savings": round(potential_savings, 2),
+        "supermarket_count": len([g for g in supermarket_groups if g["supermarket_name"] != "Nicht gefunden"])
+    }
+
 # ---- Price Alerts ----
 
 @api_router.get("/alerts", response_model=List[PriceAlert])
