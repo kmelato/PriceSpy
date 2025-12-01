@@ -170,15 +170,18 @@ backend:
 
   - task: "Price Alerts CRUD"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Create and delete price alerts. Needs testing"
+      - working: true
+        agent: "testing"
+        comment: "All price alert operations tested successfully: POST /alerts (create with target price and current price lookup), GET /alerts (retrieve all), DELETE /alerts/{id} (delete alert). Automatic price checking and triggering logic working correctly."
 
   - task: "AI Extraction from Image"
     implemented: true
