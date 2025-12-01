@@ -112,8 +112,8 @@ export default function SupermarketsScreen() {
         <View style={styles.infoCard}>
           <Ionicons name="information-circle-outline" size={24} color="#888" />
           <Text style={styles.infoText}>
-            Aktivieren Sie die Superm\u00e4rkte, deren Prospekte f\u00fcr den Preisvergleich
-            ber\u00fccksichtigt werden sollen.
+            Aktivieren Sie die Supermärkte, deren Prospekte für den Preisvergleich
+            berücksichtigt werden sollen.
           </Text>
         </View>
 
