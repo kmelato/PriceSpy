@@ -267,13 +267,14 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Shopping Lists CRUD"
-    - "Price Alerts CRUD"
     - "Compare Screen"
-  stuck_tasks: []
+  stuck_tasks:
+    - "AI Extraction from Image"
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
     message: "Initial MVP implementation complete. Core features working: supermarket list, product display with prices, comparison. Need to test shopping lists, price alerts, and compare functionality."
+  - agent: "testing"
+    message: "Backend testing completed. All core APIs working: supermarkets (8 German chains), products with filters, price comparison, shopping lists CRUD, price alerts CRUD, settings. AI extraction endpoint has library API issue but handles errors gracefully. 21/21 tests passed for core functionality."
