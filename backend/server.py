@@ -248,21 +248,318 @@ Antworte NUR mit einem JSON-Array der Produkte, keine zusätzlichen Erklärungen
         logger.error(f"Error extracting products: {e}")
         return []
 
-async def fetch_prospekt_page(url: str) -> Optional[str]:
-    """Fetch prospekt page HTML."""
+async def fetch_prospekt_page(url: str) -> tuple[Optional[str], Optional[int], Optional[str]]:
+    """Fetch prospekt page HTML. Returns (html, status_code, error_message)."""
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Language": "de-DE,de;q=0.9,en;q=0.8"
+            "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Cache-Control": "max-age=0"
         }
         async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
             response = await client.get(url, headers=headers)
             if response.status_code == 200:
-                return response.text
+                return response.text, 200, None
+            else:
+                return None, response.status_code, f"HTTP {response.status_code}: Server antwortete mit Fehler"
+    except httpx.TimeoutException:
+        return None, None, "Zeitüberschreitung: Server antwortet nicht"
+    except httpx.ConnectError:
+        return None, None, "Verbindungsfehler: Server nicht erreichbar"
     except Exception as e:
         logger.error(f"Error fetching {url}: {e}")
-    return None
+        return None, None, f"Fehler: {str(e)}"
+
+# ==================== Web Scraping Functions ====================
+
+async def scrape_rewe_offers(supermarket: dict) -> tuple[List[Dict], Optional[ScrapeError]]:
+    """Scrape REWE offers from their website."""
+    url = supermarket.get("prospekt_url", "https://www.rewe.de/angebote/nationale-angebote/")
+    html, status, error = await fetch_prospekt_page(url)
+    
+    if not html:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=error or "Seite konnte nicht geladen werden",
+            http_status=status
+        )
+    
+    products = []
+    try:
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # Try to find offer elements - REWE uses different structures
+        offer_elements = soup.select('.offer-tile, .product-tile, [data-test="offer-tile"], .cor-offer-tile')
+        
+        if not offer_elements:
+            # Try alternative selectors
+            offer_elements = soup.select('.search-service-productTile, .product-card, .offer-card')
+        
+        for elem in offer_elements[:30]:  # Limit to 30 products
+            try:
+                # Try different selector patterns for product name
+                name_elem = elem.select_one('.product-name, .offer-title, h3, h4, .title')
+                price_elem = elem.select_one('.price, .offer-price, .current-price, [data-test="price"]')
+                
+                if name_elem and price_elem:
+                    name = name_elem.get_text(strip=True)
+                    price_text = price_elem.get_text(strip=True)
+                    
+                    # Parse price
+                    price_match = re.search(r'(\d+)[,.](\d{2})', price_text)
+                    if price_match:
+                        price = float(f"{price_match.group(1)}.{price_match.group(2)}")
+                        
+                        # Try to get base price
+                        base_price_elem = elem.select_one('.base-price, .price-per-unit, .grundpreis')
+                        base_price = base_price_elem.get_text(strip=True) if base_price_elem else None
+                        
+                        products.append({
+                            "name": name,
+                            "price": price,
+                            "price_per_unit": base_price,
+                            "product_url": url
+                        })
+            except Exception as e:
+                logger.debug(f"Error parsing REWE product: {e}")
+                continue
+        
+        if not products:
+            return [], ScrapeError(
+                supermarket_id=supermarket["id"],
+                supermarket_name=supermarket["name"],
+                prospekt_url=url,
+                error_message="Seite wurde geladen, aber keine Produkte gefunden. Die Website-Struktur hat sich möglicherweise geändert oder JavaScript-Inhalte wurden nicht geladen.",
+                http_status=200
+            )
+            
+    except Exception as e:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=f"Fehler beim Parsen der Seite: {str(e)}",
+            http_status=200
+        )
+    
+    return products, None
+
+async def scrape_lidl_offers(supermarket: dict) -> tuple[List[Dict], Optional[ScrapeError]]:
+    """Scrape Lidl offers."""
+    url = supermarket.get("prospekt_url", "https://www.lidl.de/c/billiger-montag/a10006065")
+    html, status, error = await fetch_prospekt_page(url)
+    
+    if not html:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=error or "Seite konnte nicht geladen werden",
+            http_status=status
+        )
+    
+    products = []
+    try:
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # Lidl product selectors
+        offer_elements = soup.select('.product, .product-grid-box, .ACampaignGrid__ProductGridBox, [data-grid-box]')
+        
+        for elem in offer_elements[:30]:
+            try:
+                name_elem = elem.select_one('.product-title, .lidl-m-pricebox__title, h3, .title')
+                price_elem = elem.select_one('.price, .lidl-m-pricebox__price, .pricebox__price')
+                
+                if name_elem and price_elem:
+                    name = name_elem.get_text(strip=True)
+                    price_text = price_elem.get_text(strip=True)
+                    
+                    price_match = re.search(r'(\d+)[,.](\d{2})', price_text)
+                    if price_match:
+                        price = float(f"{price_match.group(1)}.{price_match.group(2)}")
+                        
+                        base_price_elem = elem.select_one('.base-price, .pricebox__basic-price')
+                        base_price = base_price_elem.get_text(strip=True) if base_price_elem else None
+                        
+                        products.append({
+                            "name": name,
+                            "price": price,
+                            "price_per_unit": base_price,
+                            "product_url": url
+                        })
+            except Exception:
+                continue
+        
+        if not products:
+            return [], ScrapeError(
+                supermarket_id=supermarket["id"],
+                supermarket_name=supermarket["name"],
+                prospekt_url=url,
+                error_message="Keine Produkte gefunden. Website verwendet möglicherweise JavaScript-Rendering.",
+                http_status=200
+            )
+            
+    except Exception as e:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=f"Fehler beim Parsen: {str(e)}",
+            http_status=200
+        )
+    
+    return products, None
+
+async def scrape_aldi_offers(supermarket: dict) -> tuple[List[Dict], Optional[ScrapeError]]:
+    """Scrape Aldi offers."""
+    url = supermarket.get("prospekt_url", "https://www.aldi-nord.de/angebote.html")
+    html, status, error = await fetch_prospekt_page(url)
+    
+    if not html:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=error or "Seite konnte nicht geladen werden",
+            http_status=status
+        )
+    
+    products = []
+    try:
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # Aldi product selectors
+        offer_elements = soup.select('.mod-article-tile, .product-tile, .offer-item, [class*="product"]')
+        
+        for elem in offer_elements[:30]:
+            try:
+                name_elem = elem.select_one('.mod-article-tile__title, .product-title, h3, h4')
+                price_elem = elem.select_one('.price, .mod-article-tile__price, [class*="price"]')
+                
+                if name_elem and price_elem:
+                    name = name_elem.get_text(strip=True)
+                    price_text = price_elem.get_text(strip=True)
+                    
+                    price_match = re.search(r'(\d+)[,.](\d{2})', price_text)
+                    if price_match:
+                        price = float(f"{price_match.group(1)}.{price_match.group(2)}")
+                        
+                        base_price_elem = elem.select_one('.base-price, [class*="grundpreis"]')
+                        base_price = base_price_elem.get_text(strip=True) if base_price_elem else None
+                        
+                        products.append({
+                            "name": name,
+                            "price": price,
+                            "price_per_unit": base_price,
+                            "product_url": url
+                        })
+            except Exception:
+                continue
+        
+        if not products:
+            return [], ScrapeError(
+                supermarket_id=supermarket["id"],
+                supermarket_name=supermarket["name"],
+                prospekt_url=url,
+                error_message="Keine Produkte gefunden. Aldi verwendet JavaScript-Rendering für Angebote.",
+                http_status=200
+            )
+            
+    except Exception as e:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=f"Fehler beim Parsen: {str(e)}",
+            http_status=200
+        )
+    
+    return products, None
+
+async def scrape_generic_offers(supermarket: dict) -> tuple[List[Dict], Optional[ScrapeError]]:
+    """Generic scraper for other supermarkets."""
+    url = supermarket.get("prospekt_url", "")
+    html, status, error = await fetch_prospekt_page(url)
+    
+    if not html:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=error or "Seite konnte nicht geladen werden",
+            http_status=status
+        )
+    
+    products = []
+    try:
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # Generic product selectors
+        offer_elements = soup.select('[class*="product"], [class*="offer"], [class*="artikel"], [class*="item"]')
+        
+        for elem in offer_elements[:30]:
+            try:
+                name_elem = elem.select_one('[class*="title"], [class*="name"], h3, h4, h5')
+                price_elem = elem.select_one('[class*="price"], [class*="preis"]')
+                
+                if name_elem and price_elem:
+                    name = name_elem.get_text(strip=True)
+                    price_text = price_elem.get_text(strip=True)
+                    
+                    if len(name) > 3:  # Filter very short names
+                        price_match = re.search(r'(\d+)[,.](\d{2})', price_text)
+                        if price_match:
+                            price = float(f"{price_match.group(1)}.{price_match.group(2)}")
+                            
+                            base_price_elem = elem.select_one('[class*="basic"], [class*="grund"], [class*="unit"]')
+                            base_price = base_price_elem.get_text(strip=True) if base_price_elem else None
+                            
+                            products.append({
+                                "name": name,
+                                "price": price,
+                                "price_per_unit": base_price,
+                                "product_url": url
+                            })
+            except Exception:
+                continue
+        
+        if not products:
+            return [], ScrapeError(
+                supermarket_id=supermarket["id"],
+                supermarket_name=supermarket["name"],
+                prospekt_url=url,
+                error_message="Keine Produkte gefunden. Die Website verwendet möglicherweise JavaScript-Rendering oder eine unbekannte Struktur.",
+                http_status=200
+            )
+            
+    except Exception as e:
+        return [], ScrapeError(
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            prospekt_url=url,
+            error_message=f"Fehler beim Parsen: {str(e)}",
+            http_status=200
+        )
+    
+    return products, None
+
+async def scrape_supermarket(supermarket: dict) -> tuple[List[Dict], Optional[ScrapeError]]:
+    """Route to appropriate scraper based on supermarket name."""
+    name = supermarket.get("name", "").lower()
+    
+    if "rewe" in name:
+        return await scrape_rewe_offers(supermarket)
+    elif "lidl" in name:
+        return await scrape_lidl_offers(supermarket)
+    elif "aldi" in name:
+        return await scrape_aldi_offers(supermarket)
+    else:
+        return await scrape_generic_offers(supermarket)
 
 # ==================== API Routes ====================
 
