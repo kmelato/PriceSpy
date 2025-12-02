@@ -250,15 +250,22 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+        {/* Grundpreis / Base price */}
+        {product.price_per_unit && (
+          <Text style={styles.basePriceText}>{product.price_per_unit}</Text>
+        )}
+        {/* Link to supermarket offer */}
         <TouchableOpacity 
           style={styles.supermarketRow}
-          onPress={() => product.prospekt_url && openProspekt(product.prospekt_url)}
+          onPress={() => {
+            const url = product.product_url || product.prospekt_url;
+            if (url) openProspekt(url);
+          }}
         >
           <Ionicons name="storefront" size={14} color="#4CAF50" />
           <Text style={styles.supermarketName}>{product.supermarket_name}</Text>
-          {product.prospekt_url && (
-            <Ionicons name="open-outline" size={12} color="#888" />
-          )}
+          <Ionicons name="open-outline" size={12} color="#4CAF50" />
+          <Text style={styles.linkText}>Zum Angebot</Text>
         </TouchableOpacity>
         {product.valid_from && product.valid_until && (
           <Text style={styles.validityText}>
@@ -282,6 +289,76 @@ export default function HomeScreen() {
         )}
       </View>
     </TouchableOpacity>
+  );
+
+  // Scrape Errors Modal
+  const renderErrorsModal = () => (
+    <Modal
+      visible={showErrorsModal}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setShowErrorsModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.errorsModalContent}>
+          <View style={styles.modalHeader}>
+            <View style={styles.errorHeaderRow}>
+              <Ionicons name="warning" size={24} color="#FF9800" />
+              <Text style={styles.errorModalTitle}>Daten konnten nicht gelesen werden</Text>
+            </View>
+            <TouchableOpacity onPress={() => setShowErrorsModal(false)}>
+              <Ionicons name="close" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.errorsContainer}>
+            <Text style={styles.errorInfoText}>
+              Folgende Websites konnten nicht ausgelesen werden. Die meisten Supermärkte verwenden 
+              JavaScript-Rendering oder blockieren automatisches Auslesen.
+            </Text>
+            
+            {scrapeErrors.map((error) => (
+              <View key={error.id} style={styles.errorCard}>
+                <View style={styles.errorCardHeader}>
+                  <Ionicons name="storefront" size={20} color="#FF9800" />
+                  <Text style={styles.errorSupermarketName}>{error.supermarket_name}</Text>
+                </View>
+                
+                <Text style={styles.errorMessage}>{error.error_message}</Text>
+                
+                <TouchableOpacity
+                  style={styles.errorLinkRow}
+                  onPress={() => openProspekt(error.prospekt_url)}
+                >
+                  <Ionicons name="link" size={16} color="#2196F3" />
+                  <Text style={styles.errorLink} numberOfLines={1}>
+                    {error.prospekt_url}
+                  </Text>
+                  <Ionicons name="open-outline" size={14} color="#2196F3" />
+                </TouchableOpacity>
+                
+                <Text style={styles.errorTimestamp}>
+                  Zeitpunkt: {formatTimestamp(error.timestamp)}
+                </Text>
+                
+                {error.http_status && (
+                  <Text style={styles.errorHttpStatus}>
+                    HTTP Status: {error.http_status}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+          
+          <TouchableOpacity
+            style={styles.closeErrorsButton}
+            onPress={() => setShowErrorsModal(false)}
+          >
+            <Text style={styles.closeErrorsButtonText}>Schließen</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 
   // Product Detail Modal
