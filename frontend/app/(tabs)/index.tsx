@@ -870,16 +870,30 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
+  basePriceText: {
+    fontSize: 11,
+    color: '#888',
+    marginTop: 2,
+  },
   supermarketRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 4,
+    marginTop: 6,
+    backgroundColor: '#252525',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   supermarketName: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#4CAF50',
-    marginRight: 4,
+  },
+  linkText: {
+    fontSize: 11,
+    color: '#4CAF50',
+    marginLeft: 2,
   },
   validityText: {
     fontSize: 11,
