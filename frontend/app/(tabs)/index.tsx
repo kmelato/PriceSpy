@@ -571,10 +571,33 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>Prospekt Preisvergleich</Text>
-        <TouchableOpacity onPress={triggerScan} style={styles.refreshButton}>
-          <Ionicons name="refresh" size={24} color="#4CAF50" />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          {scrapeErrors.length > 0 && (
+            <TouchableOpacity 
+              onPress={() => setShowErrorsModal(true)} 
+              style={styles.errorButton}
+            >
+              <Ionicons name="warning" size={20} color="#FF9800" />
+              <Text style={styles.errorCountBadge}>{scrapeErrors.length}</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={triggerScan} style={styles.refreshButton} disabled={scanning}>
+            {scanning ? (
+              <ActivityIndicator size="small" color="#4CAF50" />
+            ) : (
+              <Ionicons name="refresh" size={24} color="#4CAF50" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Scanning indicator */}
+      {scanning && (
+        <View style={styles.scanningBanner}>
+          <ActivityIndicator size="small" color="#fff" />
+          <Text style={styles.scanningText}>Web-Scraping läuft...</Text>
+        </View>
+      )}
 
       {/* Supermarket Filter Button */}
       <TouchableOpacity 
