@@ -1,136 +1,141 @@
 diff --git a/model.patch b/model.patch
-index b792055..e69de29 100644
+index 2f9b5e3..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,131 +0,0 @@
+@@ -1,136 +0,0 @@
 -diff --git a/model.patch b/model.patch
--index ac44768..e69de29 100644
+-index b792055..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,126 +0,0 @@
+-@@ -1,131 +0,0 @@
 --diff --git a/model.patch b/model.patch
---index 2f8aa35..e69de29 100644
+--index ac44768..e69de29 100644
 ----- a/model.patch
 --+++ b/model.patch
---@@ -1,121 +0,0 @@
----diff --git a/.gitignore b/.gitignore
----index 8bfe2e2..89cf8e1 100644
------- a/.gitignore
----+++ b/.gitignore
----@@ -78,6 +78,6 @@ agenthub/agents/youtube/db
---- 
---- # Mobile development
---- android-sdk/ -e 
-----# Environment files
-----*.env
-----*.env.*
----+# Environment files - DO NOT ignore .env files, they are needed for deployment
----+# *.env
----+# *.env.*
----diff --git a/backend/.env b/backend/.env
----new file mode 100644
----index 0000000..ebc10ff
------- /dev/null
----+++ b/backend/.env
----@@ -0,0 +1,3 @@
----+MONGO_URL="mongodb://localhost:27017"
----+DB_NAME="test_database"
----+EMERGENT_LLM_KEY=sk-emergent-8A012Aa5855086b8b9
----diff --git a/frontend/.env b/frontend/.env
----new file mode 100644
----index 0000000..a8e5d5f
------- /dev/null
----+++ b/frontend/.env
----@@ -0,0 +1,5 @@
----+EXPO_TUNNEL_SUBDOMAIN=grocery-deal-finder-3
----+EXPO_PACKAGER_HOSTNAME=https://grocery-deal-finder-3.preview.emergentagent.com
----+EXPO_PUBLIC_BACKEND_URL=https://grocery-deal-finder-3.preview.emergentagent.com
----+EXPO_USE_FAST_RESOLVER="1"
----+METRO_CACHE_ROOT=/app/frontend/.metro-cache
----\ No newline at end of file
+--@@ -1,126 +0,0 @@
 ---diff --git a/model.patch b/model.patch
----index 494e1d9..e69de29 100644
+---index 2f8aa35..e69de29 100644
 ------ a/model.patch
 ---+++ b/model.patch
----@@ -1,81 +0,0 @@
+---@@ -1,121 +0,0 @@
+----diff --git a/.gitignore b/.gitignore
+----index 8bfe2e2..89cf8e1 100644
+------- a/.gitignore
+----+++ b/.gitignore
+----@@ -78,6 +78,6 @@ agenthub/agents/youtube/db
+---- 
+---- # Mobile development
+---- android-sdk/ -e 
+-----# Environment files
+-----*.env
+-----*.env.*
+----+# Environment files - DO NOT ignore .env files, they are needed for deployment
+----+# *.env
+----+# *.env.*
+----diff --git a/backend/.env b/backend/.env
+----new file mode 100644
+----index 0000000..ebc10ff
+------- /dev/null
+----+++ b/backend/.env
+----@@ -0,0 +1,3 @@
+----+MONGO_URL="mongodb://localhost:27017"
+----+DB_NAME="test_database"
+----+EMERGENT_LLM_KEY=sk-emergent-8A012Aa5855086b8b9
+----diff --git a/frontend/.env b/frontend/.env
+----new file mode 100644
+----index 0000000..a8e5d5f
+------- /dev/null
+----+++ b/frontend/.env
+----@@ -0,0 +1,5 @@
+----+EXPO_TUNNEL_SUBDOMAIN=grocery-deal-finder-3
+----+EXPO_PACKAGER_HOSTNAME=https://grocery-deal-finder-3.preview.emergentagent.com
+----+EXPO_PUBLIC_BACKEND_URL=https://grocery-deal-finder-3.preview.emergentagent.com
+----+EXPO_USE_FAST_RESOLVER="1"
+----+METRO_CACHE_ROOT=/app/frontend/.metro-cache
+----\ No newline at end of file
 ----diff --git a/model.patch b/model.patch
-----index 480b644..e69de29 100644
+----index 494e1d9..e69de29 100644
 ------- a/model.patch
 ----+++ b/model.patch
-----@@ -1,76 +0,0 @@
------diff --git a/test_result.md b/test_result.md
------index 0ff3c70..e8b3703 100644
--------- a/test_result.md
------+++ b/test_result.md
------@@ -159,35 +159,44 @@ backend:
------     file: "/app/backend/server.py"
------     stuck_count: 0
------     priority: "medium"
-------    needs_retesting: true
------+    needs_retesting: false
------     status_history:
------       - working: "NA"
------         agent: "main"
------         comment: "Create, read, update, delete shopping lists with items. Needs testing"
------+      - working: true
------+        agent: "testing"
------+        comment: "All shopping list CRUD operations tested successfully: POST /lists (create), GET /lists (retrieve all), POST /lists/{id}/items (add items), PUT /lists/{id}/items/{index}/toggle (toggle checked), DELETE /lists/{id}/items/{index} (remove item), DELETE /lists/{id} (delete list). Best price lookup working correctly."
------ 
------   - task: "Price Alerts CRUD"
------     implemented: true
-------    working: "NA"
------+    working: true
------     file: "/app/backend/server.py"
------     stuck_count: 0
------     priority: "medium"
-------    needs_retesting: true
------+    needs_retesting: false
------     status_history:
------       - working: "NA"
------         agent: "main"
------         comment: "Create and delete price alerts. Needs testing"
------+      - working: true
------+        agent: "testing"
------+        comment: "All price alert operations tested successfully: POST /alerts (create with target price and current price lookup), GET /alerts (retrieve all), DELETE /alerts/{id} (delete alert). Automatic price checking and triggering logic working correctly."
------ 
------   - task: "AI Extraction from Image"
------     implemented: true
-------    working: "NA"
------+    working: false
------     file: "/app/backend/server.py"
-------    stuck_count: 0
------+    stuck_count: 1
------     priority: "low"
-------    needs_retesting: true
------+    needs_retesting: false
------     status_history:
------       - working: "NA"
------         agent: "main"
------         comment: "POST /api/extract uses GPT-4 Vision to extract products from prospekt images. Uses Emergent LLM Key."
------+      - working: false
------+        agent: "testing"
------+        comment: "API endpoint responds correctly but AI extraction has error: 'UserMessage.__init__() got an unexpected keyword argument 'image_contents''. The emergentintegrations library API may have changed. Endpoint returns proper error handling with 'no_products' status."
------ 
------ frontend:
------   - task: "Home/Angebote Screen"
------@@ -258,13 +267,14 @@ metadata:
------ 
------ test_plan:
------   current_focus:
-------    - "Shopping Lists CRUD"
-------    - "Price Alerts CRUD"
------     - "Compare Screen"
-------  stuck_tasks: []
------+  stuck_tasks:
------+    - "AI Extraction from Image"
------   test_all: false
------   test_priority: "high_first"
------ 
------ agent_communication:
------   - agent: "main"
-------    message: "Initial MVP implementation complete. Core features working: supermarket list, product display with prices, comparison. Need to test shopping lists, price alerts, and compare functionality."
------\ No newline at end of file
------+    message: "Initial MVP implementation complete. Core features working: supermarket list, product display with prices, comparison. Need to test shopping lists, price alerts, and compare functionality."
------+  - agent: "testing"
------+    message: "Backend testing completed. All core APIs working: supermarkets (8 German chains), products with filters, price comparison, shopping lists CRUD, price alerts CRUD, settings. AI extraction endpoint has library API issue but handles errors gracefully. 21/21 tests passed for core functionality."
------\ No newline at end of file
+----@@ -1,81 +0,0 @@
+-----diff --git a/model.patch b/model.patch
+-----index 480b644..e69de29 100644
+-------- a/model.patch
+-----+++ b/model.patch
+-----@@ -1,76 +0,0 @@
+------diff --git a/test_result.md b/test_result.md
+------index 0ff3c70..e8b3703 100644
+--------- a/test_result.md
+------+++ b/test_result.md
+------@@ -159,35 +159,44 @@ backend:
+------     file: "/app/backend/server.py"
+------     stuck_count: 0
+------     priority: "medium"
+-------    needs_retesting: true
+------+    needs_retesting: false
+------     status_history:
+------       - working: "NA"
+------         agent: "main"
+------         comment: "Create, read, update, delete shopping lists with items. Needs testing"
+------+      - working: true
+------+        agent: "testing"
+------+        comment: "All shopping list CRUD operations tested successfully: POST /lists (create), GET /lists (retrieve all), POST /lists/{id}/items (add items), PUT /lists/{id}/items/{index}/toggle (toggle checked), DELETE /lists/{id}/items/{index} (remove item), DELETE /lists/{id} (delete list). Best price lookup working correctly."
+------ 
+------   - task: "Price Alerts CRUD"
+------     implemented: true
+-------    working: "NA"
+------+    working: true
+------     file: "/app/backend/server.py"
+------     stuck_count: 0
+------     priority: "medium"
+-------    needs_retesting: true
+------+    needs_retesting: false
+------     status_history:
+------       - working: "NA"
+------         agent: "main"
+------         comment: "Create and delete price alerts. Needs testing"
+------+      - working: true
+------+        agent: "testing"
+------+        comment: "All price alert operations tested successfully: POST /alerts (create with target price and current price lookup), GET /alerts (retrieve all), DELETE /alerts/{id} (delete alert). Automatic price checking and triggering logic working correctly."
+------ 
+------   - task: "AI Extraction from Image"
+------     implemented: true
+-------    working: "NA"
+------+    working: false
+------     file: "/app/backend/server.py"
+-------    stuck_count: 0
+------+    stuck_count: 1
+------     priority: "low"
+-------    needs_retesting: true
+------+    needs_retesting: false
+------     status_history:
+------       - working: "NA"
+------         agent: "main"
+------         comment: "POST /api/extract uses GPT-4 Vision to extract products from prospekt images. Uses Emergent LLM Key."
+------+      - working: false
+------+        agent: "testing"
+------+        comment: "API endpoint responds correctly but AI extraction has error: 'UserMessage.__init__() got an unexpected keyword argument 'image_contents''. The emergentintegrations library API may have changed. Endpoint returns proper error handling with 'no_products' status."
+------ 
+------ frontend:
+------   - task: "Home/Angebote Screen"
+------@@ -258,13 +267,14 @@ metadata:
+------ 
+------ test_plan:
+------   current_focus:
+-------    - "Shopping Lists CRUD"
+-------    - "Price Alerts CRUD"
+------     - "Compare Screen"
+-------  stuck_tasks: []
+------+  stuck_tasks:
+------+    - "AI Extraction from Image"
+------   test_all: false
+------   test_priority: "high_first"
+------ 
+------ agent_communication:
+------   - agent: "main"
+-------    message: "Initial MVP implementation complete. Core features working: supermarket list, product display with prices, comparison. Need to test shopping lists, price alerts, and compare functionality."
+------\ No newline at end of file
+------+    message: "Initial MVP implementation complete. Core features working: supermarket list, product display with prices, comparison. Need to test shopping lists, price alerts, and compare functionality."
+------+  - agent: "testing"
+------+    message: "Backend testing completed. All core APIs working: supermarkets (8 German chains), products with filters, price comparison, shopping lists CRUD, price alerts CRUD, settings. AI extraction endpoint has library API issue but handles errors gracefully. 21/21 tests passed for core functionality."
+------\ No newline at end of file
