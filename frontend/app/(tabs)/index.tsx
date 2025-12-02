@@ -30,6 +30,7 @@ interface Supermarket {
 interface Product {
   id: string;
   name: string;
+  manufacturer?: string;
   price: number;
   original_price?: number;
   category: string;
@@ -37,11 +38,23 @@ interface Product {
   supermarket_name: string;
   supermarket_logo?: string;
   prospekt_url?: string;
+  product_url?: string;
   unit?: string;
   price_per_unit?: string;
   valid_from?: string;
   valid_until?: string;
   week_label?: string;
+  is_real_data?: boolean;
+}
+
+interface ScrapeError {
+  id: string;
+  supermarket_id: string;
+  supermarket_name: string;
+  prospekt_url: string;
+  error_message: string;
+  timestamp: string;
+  http_status?: number;
 }
 
 const CATEGORIES = [
