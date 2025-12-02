@@ -698,24 +698,111 @@ async def get_categories():
 async def scan_prospekts(request: ScanRequest, background_tasks: BackgroundTasks):
     """Trigger scanning of prospekts (returns immediately, scans in background)."""
     background_tasks.add_task(run_prospekt_scan, request.supermarket_ids, request.force_refresh)
-    return {"status": "scanning", "message": "Prospekt-Scan wurde gestartet"}
+    return {"status": "scanning", "message": "Prospekt-Scan wurde gestartet. Web-Scraping läuft..."}
+
+@api_router.get("/scrape-errors")
+async def get_scrape_errors():
+    """Get all scraping errors."""
+    errors = await db.scrape_errors.find().sort("timestamp", -1).to_list(100)
+    return [ScrapeError(**e) for e in errors]
+
+@api_router.get("/scrape-errors/{supermarket_id}")
+async def get_scrape_errors_by_supermarket(supermarket_id: str):
+    """Get scraping errors for a specific supermarket."""
+    errors = await db.scrape_errors.find({"supermarket_id": supermarket_id}).sort("timestamp", -1).to_list(10)
+    return [ScrapeError(**e) for e in errors]
 
 async def run_prospekt_scan(supermarket_ids: List[str], force_refresh: bool):
-    """Background task to scan prospekts."""
+    """Background task to scan prospekts using web scraping."""
     query = {"is_active": True}
     if supermarket_ids:
         query["id"] = {"$in": supermarket_ids}
     
     supermarkets = await db.supermarkets.find(query).to_list(100)
     
+    # Clear old scrape errors
+    await db.scrape_errors.delete_many({})
+    
     for sm in supermarkets:
         try:
-            logger.info(f"Scanning {sm['name']}...")
-            # This would fetch and process real prospekt data
-            # For MVP, we'll create sample data
-            await create_sample_products(sm)
+            logger.info(f"Web-Scraping {sm['name']} von {sm.get('prospekt_url', 'N/A')}...")
+            
+            # Try web scraping first
+            scraped_products, scrape_error = await scrape_supermarket(sm)
+            
+            if scrape_error:
+                # Save the error for display
+                await db.scrape_errors.insert_one(scrape_error.dict())
+                logger.warning(f"Scraping failed for {sm['name']}: {scrape_error.error_message}")
+                
+                # No fallback to sample data - just log the error
+                logger.info(f"Keine Daten für {sm['name']} verfügbar. Fehler wurde gespeichert.")
+            else:
+                # Successfully scraped - save real products
+                await db.products.delete_many({"supermarket_id": sm["id"]})
+                
+                valid_from = datetime.utcnow()
+                valid_until = valid_from + timedelta(days=7)
+                
+                for sp in scraped_products:
+                    product = Product(
+                        name=sp.get("name", "Unbekannt"),
+                        original_name=sp.get("name", "Unbekannt"),
+                        manufacturer=sp.get("manufacturer"),
+                        price=sp.get("price", 0),
+                        original_price=sp.get("original_price"),
+                        unit=sp.get("unit"),
+                        price_per_unit=sp.get("price_per_unit"),
+                        category=categorize_product(sp.get("name", "")),
+                        supermarket_id=sm["id"],
+                        supermarket_name=sm["name"],
+                        supermarket_logo=sm.get("logo_url"),
+                        prospekt_url=sm.get("prospekt_url"),
+                        product_url=sp.get("product_url"),
+                        valid_from=valid_from,
+                        valid_until=valid_until,
+                        week_label="Diese Woche",
+                        is_real_data=True
+                    )
+                    await db.products.insert_one(product.dict())
+                
+                logger.info(f"Erfolgreich {len(scraped_products)} echte Produkte für {sm['name']} gespeichert")
+                
         except Exception as e:
             logger.error(f"Error scanning {sm['name']}: {e}")
+            # Save error
+            error = ScrapeError(
+                supermarket_id=sm["id"],
+                supermarket_name=sm["name"],
+                prospekt_url=sm.get("prospekt_url", ""),
+                error_message=f"Unerwarteter Fehler: {str(e)}"
+            )
+            await db.scrape_errors.insert_one(error.dict())
+
+def categorize_product(name: str) -> str:
+    """Automatically categorize a product based on its name."""
+    name_lower = name.lower()
+    
+    if any(word in name_lower for word in ["apfel", "banane", "tomate", "salat", "karotte", "gurke", "obst", "gemüse", "orange", "erdbeere", "weintraube"]):
+        return "Obst & Gemüse"
+    elif any(word in name_lower for word in ["fleisch", "wurst", "schinken", "hähnchen", "rind", "schwein", "hack", "steak", "lachs", "fisch"]):
+        return "Fleisch & Wurst"
+    elif any(word in name_lower for word in ["milch", "käse", "joghurt", "butter", "quark", "sahne", "ei", "eier"]):
+        return "Milchprodukte"
+    elif any(word in name_lower for word in ["brot", "brötchen", "croissant", "kuchen", "toast", "gebäck"]):
+        return "Brot & Backwaren"
+    elif any(word in name_lower for word in ["cola", "wasser", "saft", "bier", "wein", "limo", "getränk", "kaffee", "tee"]):
+        return "Getränke"
+    elif any(word in name_lower for word in ["schoko", "chips", "süß", "bonbon", "keks", "gummi", "eis"]):
+        return "Süßigkeiten & Snacks"
+    elif any(word in name_lower for word in ["tiefkühl", "pizza", "pommes", "frost"]):
+        return "Tiefkühl"
+    elif any(word in name_lower for word in ["wasch", "spül", "reinig", "papier", "tuch"]):
+        return "Haushalt"
+    elif any(word in name_lower for word in ["shampoo", "dusch", "zahn", "seife", "creme", "deo"]):
+        return "Drogerie"
+    else:
+        return "Sonstiges"
 
 async def create_sample_products(supermarket: dict):
     """Create sample products for demo purposes."""
