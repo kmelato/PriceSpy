@@ -59,22 +59,34 @@ class SupermarketCreate(BaseModel):
 
 class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
+    name: str  # Full product name with manufacturer
     original_name: str
+    manufacturer: Optional[str] = None  # Hersteller
     price: float
     original_price: Optional[float] = None
-    unit: Optional[str] = None
-    price_per_unit: Optional[str] = None
+    unit: Optional[str] = None  # e.g., "500g", "1L"
+    price_per_unit: Optional[str] = None  # Grundpreis e.g., "1kg = 3.98€"
     category: str
     supermarket_id: str
     supermarket_name: str
     supermarket_logo: Optional[str] = None
     prospekt_url: Optional[str] = None  # Link to original prospekt
+    product_url: Optional[str] = None  # Direct link to product offer
     valid_from: Optional[datetime] = None
     valid_until: Optional[datetime] = None
     week_label: Optional[str] = None  # "Diese Woche" or "Nächste Woche"
     image_base64: Optional[str] = None
     extracted_at: datetime = Field(default_factory=datetime.utcnow)
+    is_real_data: bool = False  # True if scraped from real website
+
+class ScrapeError(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    supermarket_id: str
+    supermarket_name: str
+    prospekt_url: str
+    error_message: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    http_status: Optional[int] = None
 
 class ShoppingListItem(BaseModel):
     product_name: str
