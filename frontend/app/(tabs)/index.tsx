@@ -1175,4 +1175,93 @@ const styles = StyleSheet.create({
     color: '#FF9800',
     marginTop: 24,
   },
+  // Error Modal styles
+  errorsModalContent: {
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '85%',
+  },
+  errorHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  errorModalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FF9800',
+  },
+  errorsContainer: {
+    padding: 16,
+    paddingTop: 0,
+  },
+  errorInfoText: {
+    color: '#888',
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  errorCard: {
+    backgroundColor: '#252525',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF9800',
+  },
+  errorCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  errorSupermarketName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  errorMessage: {
+    color: '#ccc',
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  errorLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a3d5c',
+    padding: 10,
+    borderRadius: 8,
+    gap: 8,
+    marginBottom: 8,
+  },
+  errorLink: {
+    flex: 1,
+    color: '#2196F3',
+    fontSize: 12,
+  },
+  errorTimestamp: {
+    color: '#888',
+    fontSize: 11,
+  },
+  errorHttpStatus: {
+    color: '#888',
+    fontSize: 11,
+    marginTop: 4,
+  },
+  closeErrorsButton: {
+    backgroundColor: '#333',
+    margin: 16,
+    marginTop: 0,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  closeErrorsButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
 });
