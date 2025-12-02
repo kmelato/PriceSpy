@@ -697,6 +697,7 @@ export default function HomeScreen() {
 
       {renderProductModal()}
       {renderSupermarketPicker()}
+      {renderErrorsModal()}
     </SafeAreaView>
   );
 }
@@ -712,6 +713,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  errorButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3d2a00',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  errorCountBadge: {
+    color: '#FF9800',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginLeft: 4,
+  },
+  scanningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2196F3',
+    paddingVertical: 8,
+    gap: 8,
+  },
+  scanningText: {
+    color: '#fff',
+    fontSize: 14,
   },
   title: {
     fontSize: 24,
