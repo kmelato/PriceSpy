@@ -68,8 +68,11 @@ class Product(BaseModel):
     category: str
     supermarket_id: str
     supermarket_name: str
+    supermarket_logo: Optional[str] = None
+    prospekt_url: Optional[str] = None  # Link to original prospekt
     valid_from: Optional[datetime] = None
     valid_until: Optional[datetime] = None
+    week_label: Optional[str] = None  # "Diese Woche" or "Nächste Woche"
     image_base64: Optional[str] = None
     extracted_at: datetime = Field(default_factory=datetime.utcnow)
 
