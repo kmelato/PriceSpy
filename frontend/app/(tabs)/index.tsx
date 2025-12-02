@@ -169,22 +169,34 @@ export default function HomeScreen() {
     } else {
       fetchProducts();
     }
+    fetchScrapeErrors();
   }, [selectedSupermarket, fetchProducts]);
 
   const triggerScan = async () => {
     try {
+      setScanning(true);
       setLoading(true);
       await axios.post(`${API_URL}/api/scan`, { force_refresh: true });
-      setTimeout(() => {
+      // Wait for scraping to complete (it takes time)
+      setTimeout(async () => {
+        await fetchScrapeErrors();
         if (selectedSupermarket) {
-          fetchSupermarketOffers(selectedSupermarket);
+          await fetchSupermarketOffers(selectedSupermarket);
         } else {
-          fetchProducts();
+          await fetchProducts();
         }
-      }, 2000);
+        setScanning(false);
+        // Show errors modal if there are errors
+        const errorsRes = await axios.get(`${API_URL}/api/scrape-errors`);
+        if (errorsRes.data.length > 0) {
+          setScrapeErrors(errorsRes.data);
+          setShowErrorsModal(true);
+        }
+      }, 5000); // Give more time for web scraping
     } catch (error) {
       console.error('Error triggering scan:', error);
       setLoading(false);
+      setScanning(false);
     }
   };
 
@@ -196,6 +208,18 @@ export default function HomeScreen() {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  };
+
+  const formatTimestamp = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleString('de-DE', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const getSelectedSupermarketName = () => {
@@ -213,8 +237,9 @@ export default function HomeScreen() {
     >
       <View style={styles.productInfo}>
         <View style={styles.productHeader}>
+          {/* Full product name with manufacturer */}
           <Text style={styles.productName} numberOfLines={2}>
-            {product.name}
+            {product.manufacturer ? `${product.manufacturer} ` : ''}{product.name}
           </Text>
           {product.week_label && (
             <View style={[
