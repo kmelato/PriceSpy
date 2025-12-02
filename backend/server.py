@@ -438,9 +438,19 @@ async def create_sample_products(supermarket: dict):
         {"name": "Zahnpasta", "category": "Drogerie", "base_price": 1.29},
     ]
     
+    # Additional products for next week
+    next_week_products = [
+        {"name": "Erdbeeren 500g", "category": "Obst & Gemüse", "base_price": 2.99},
+        {"name": "Lachs Filet 200g", "category": "Fleisch & Wurst", "base_price": 6.99},
+        {"name": "Mozzarella", "category": "Milchprodukte", "base_price": 1.49},
+        {"name": "Croissants 4er", "category": "Brot & Backwaren", "base_price": 1.99},
+        {"name": "Bier 6x0.5L", "category": "Getränke", "base_price": 4.99},
+    ]
+    
     # Clear old products from this supermarket
     await db.products.delete_many({"supermarket_id": supermarket["id"]})
     
+    # This week's products
     valid_from = datetime.utcnow()
     valid_until = valid_from + timedelta(days=7)
     
@@ -458,12 +468,40 @@ async def create_sample_products(supermarket: dict):
             category=sp["category"],
             supermarket_id=supermarket["id"],
             supermarket_name=supermarket["name"],
+            supermarket_logo=supermarket.get("logo_url"),
+            prospekt_url=supermarket.get("prospekt_url"),
             valid_from=valid_from,
-            valid_until=valid_until
+            valid_until=valid_until,
+            week_label="Diese Woche"
         )
         await db.products.insert_one(product.dict())
     
-    logger.info(f"Created {len(sample_products)} sample products for {supermarket['name']}")
+    # Next week's products
+    next_valid_from = valid_from + timedelta(days=7)
+    next_valid_until = next_valid_from + timedelta(days=7)
+    
+    for sp in next_week_products:
+        price_variation = random.uniform(0.85, 1.15)
+        price = round(sp["base_price"] * price_variation, 2)
+        original_price = round(price * random.uniform(1.1, 1.3), 2) if random.random() > 0.5 else None
+        
+        product = Product(
+            name=sp["name"],
+            original_name=sp["name"],
+            price=price,
+            original_price=original_price,
+            category=sp["category"],
+            supermarket_id=supermarket["id"],
+            supermarket_name=supermarket["name"],
+            supermarket_logo=supermarket.get("logo_url"),
+            prospekt_url=supermarket.get("prospekt_url"),
+            valid_from=next_valid_from,
+            valid_until=next_valid_until,
+            week_label="Nächste Woche"
+        )
+        await db.products.insert_one(product.dict())
+    
+    logger.info(f"Created {len(sample_products) + len(next_week_products)} sample products for {supermarket['name']}")
 
 # ---- Extract from Image ----
 
