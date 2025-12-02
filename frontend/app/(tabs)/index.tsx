@@ -73,7 +73,9 @@ const CATEGORIES = [
 export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
+  const [scrapeErrors, setScrapeErrors] = useState<ScrapeError[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Alle');
   const [selectedSupermarket, setSelectedSupermarket] = useState<string | null>(null);
@@ -81,6 +83,7 @@ export default function HomeScreen() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showSupermarketPicker, setShowSupermarketPicker] = useState(false);
   const [supermarketOffers, setSupermarketOffers] = useState<any>(null);
+  const [showErrorsModal, setShowErrorsModal] = useState(false);
 
   const fetchSupermarkets = async () => {
     try {
@@ -88,6 +91,15 @@ export default function HomeScreen() {
       setSupermarkets(response.data.filter((sm: Supermarket) => sm.is_active));
     } catch (error) {
       console.error('Error fetching supermarkets:', error);
+    }
+  };
+
+  const fetchScrapeErrors = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/scrape-errors`);
+      setScrapeErrors(response.data);
+    } catch (error) {
+      console.error('Error fetching scrape errors:', error);
     }
   };
 
@@ -118,6 +130,11 @@ export default function HomeScreen() {
       setLoading(true);
       const response = await axios.get(`${API_URL}/api/products/by-supermarket/${supermarketId}?include_next_week=true`);
       setSupermarketOffers(response.data);
+      // Also fetch errors for this supermarket
+      const errorsResponse = await axios.get(`${API_URL}/api/scrape-errors/${supermarketId}`);
+      if (errorsResponse.data.length > 0) {
+        setScrapeErrors(errorsResponse.data);
+      }
     } catch (error) {
       console.error('Error fetching supermarket offers:', error);
     } finally {
@@ -127,6 +144,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchSupermarkets();
+    fetchScrapeErrors();
   }, []);
 
   useEffect(() => {
