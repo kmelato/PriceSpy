@@ -300,6 +300,7 @@ async def get_products(
     category: Optional[str] = None,
     supermarket_id: Optional[str] = None,
     search: Optional[str] = None,
+    include_next_week: bool = False,
     limit: int = 50
 ):
     """Get products with optional filters."""
@@ -311,8 +312,49 @@ async def get_products(
     if search:
         query["name"] = {"$regex": search, "$options": "i"}
     
+    # By default only show current week, unless include_next_week is True
+    if not include_next_week:
+        now = datetime.utcnow()
+        query["valid_from"] = {"$lte": now}
+        query["valid_until"] = {"$gte": now}
+    
     products = await db.products.find(query).sort("price", 1).limit(limit).to_list(limit)
     return [Product(**p) for p in products]
+
+@api_router.get("/products/by-supermarket/{supermarket_id}")
+async def get_products_by_supermarket(supermarket_id: str, include_next_week: bool = True):
+    """Get all products from a specific supermarket including next week's offers."""
+    sm = await db.supermarkets.find_one({"id": supermarket_id})
+    if not sm:
+        raise HTTPException(status_code=404, detail="Supermarket not found")
+    
+    query = {"supermarket_id": supermarket_id}
+    products = await db.products.find(query).sort([("valid_from", 1), ("price", 1)]).to_list(200)
+    
+    # Group by week
+    now = datetime.utcnow()
+    this_week = []
+    next_week = []
+    
+    for p in products:
+        product = Product(**p)
+        valid_from = p.get("valid_from")
+        if valid_from and valid_from > now + timedelta(days=7):
+            next_week.append(product.dict())
+        else:
+            this_week.append(product.dict())
+    
+    return {
+        "supermarket": {
+            "id": sm.get("id"),
+            "name": sm.get("name"),
+            "logo_url": sm.get("logo_url"),
+            "prospekt_url": sm.get("prospekt_url")
+        },
+        "this_week": this_week,
+        "next_week": next_week,
+        "total_offers": len(this_week) + len(next_week)
+    }
 
 @api_router.get("/products/compare")
 async def compare_product(search: str):
